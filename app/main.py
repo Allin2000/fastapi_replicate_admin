@@ -27,10 +27,10 @@ router = APIRouter()
 router.include_router(router=health_check.router, tags=["Healthy Check"], prefix="/health-check")
 router.include_router(router=route.router, tags=["route"], prefix="/route")
 router.include_router(router=auth.router, tags=["auth"], prefix="/auth")
-router.include_router(router=logs.router, tags=["日志管理"], prefix="/system_manage",dependencies=[DependPermission])
-router.include_router(router=menus.router, tags=["菜单管理"], prefix="/system_manage",dependencies=[DependPermission])
-router.include_router(router=roles.router, tags=["角色管理"], prefix="/system_manage",dependencies=[DependPermission])
-router.include_router(router=users.router, tags=["用户管理"], prefix="/system_manage",dependencies=[DependPermission])
+router.include_router(router=logs.router, tags=["日志管理"], prefix="/system-manage",dependencies=[DependPermission])
+router.include_router(router=menus.router, tags=["菜单管理"], prefix="/system-manage",dependencies=[DependPermission])
+router.include_router(router=roles.router, tags=["角色管理"], prefix="/system-manage",dependencies=[DependPermission])
+router.include_router(router=users.router, tags=["用户管理"], prefix="/system-manage",dependencies=[DependPermission])
 
 
 def create_app() -> FastAPI:

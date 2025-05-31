@@ -130,12 +130,14 @@ CREATE TABLE IF NOT EXISTS "logs" (
     "log_type" VARCHAR(1) NOT NULL,
     "log_detail_type" VARCHAR(4),
     "create_time" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "api_log_id" INT REFERENCES "api_logs" ("id") ON DELETE SET NULL,
     "by_user_id" INT REFERENCES "users" ("id") ON DELETE NO ACTION
 );
 COMMENT ON COLUMN "logs"."id" IS '日志ID';
 COMMENT ON COLUMN "logs"."log_type" IS '日志类型';
 COMMENT ON COLUMN "logs"."log_detail_type" IS '日志详情类型';
 COMMENT ON COLUMN "logs"."create_time" IS '创建时间';
+COMMENT ON COLUMN "logs"."api_log_id" IS 'API日志';
 COMMENT ON COLUMN "logs"."by_user_id" IS '操作人';
 CREATE TABLE IF NOT EXISTS "aerich" (
     "id" SERIAL NOT NULL PRIMARY KEY,

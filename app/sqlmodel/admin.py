@@ -86,6 +86,7 @@ class Log(BaseModel):
     log_type = fields.CharEnumField(LogType, description="日志类型")
     by_user = fields.ForeignKeyField("app_system.User", null=True, on_delete=fields.NO_ACTION, description="操作人")
     log_detail_type = fields.CharEnumField(LogDetailType, null=True, description="日志详情类型")
+    api_log = fields.ForeignKeyField("app_system.APILog", null=True, on_delete=fields.SET_NULL, description="API日志")
     create_time = fields.DatetimeField(auto_now_add=True, description="创建时间")
 
     class Meta:
