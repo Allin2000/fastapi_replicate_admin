@@ -2,6 +2,7 @@
 from fastapi import FastAPI
 from aerich import Command
 from tortoise.contrib.fastapi import register_tortoise
+from loguru import logger
 
 from app.settings.config import APP_SETTINGS
 
@@ -26,6 +27,7 @@ from app.core.middlewares import BackGroundTaskMiddleware, APILoggerMiddleware, 
 from app.sqlmodel.admin import Menu, Role, User, Button, Api
 from app.sqlmodel.base import StatusType, IconType, MenuType
 from app.settings.config import APP_SETTINGS
+from pathlib import Path
 
 
 
@@ -68,14 +70,40 @@ def register_db(app: FastAPI):
 
 async def modify_db():
     command = Command(tortoise_config=APP_SETTINGS.TORTOISE_ORM, app="app_system")
+
+    # 第一步：safe 初始化数据库（通常只需一次）
     try:
+        logger.info("Step 1: Safe DB schema init...")
         await command.init_db(safe=True)
     except FileExistsError:
-        pass
+        logger.warning("Database schema already exists. Skipping safe init.")
+    except Exception as e:
+        logger.error(f"Failed to initialize DB: {e}")
+        return
 
-    await command.init()
-    await command.migrate()
-    await command.upgrade(run_in_transaction=True)
+    # 第二步：检查是否已有迁移目录，没有才 init
+    migrations_path = Path(APP_SETTINGS.TORTOISE_ORM['migrations'])  # 可能是 "migrations"
+    if not migrations_path.exists():
+        logger.info("Step 2: No migrations directory found. Initializing migrations...")
+        await command.init()
+    else:
+        logger.info("Migrations directory already exists. Skipping init.")
+
+    # 第三步：生成迁移文件（Tortoise 会判断有没有变更）
+    try:
+        logger.info("Step 3: Generating migration diff...")
+        await command.migrate()
+    except Exception as e:
+        logger.error(f"Migration generation failed: {e}")
+        return
+
+    # 第四步：升级数据库（即使迁移文件已存在，也需要升级）
+    try:
+        logger.info("Step 4: Applying migration upgrades...")
+        await command.upgrade(run_in_transaction=True)
+        logger.info("Database upgrade complete.")
+    except Exception as e:
+        logger.error(f"Database upgrade failed: {e}")
 
 
 

@@ -19,3 +19,11 @@ dependencies = [
     "tortoise-orm[asyncpg]>=0.25.0",
     "uvicorn>=0.34.2",
 ]
+
+[dependency-groups]
+dev = [
+    "fastapi-replicate-admin",
+]
+
+[tool.uv.sources]
+fastapi-replicate-admin = { workspace = true }
