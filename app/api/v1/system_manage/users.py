@@ -61,18 +61,6 @@ async def get_user(user_id: int):
 
 @router.post("/users", summary="创建用户")
 async def _(user_in: UserCreate):
-    # user_obj = await user_controller.get_by_email(user_in.user_email)
-    # if user_obj:
-    #     raise HTTPException(
-    #         code="4090",
-    #         msg="The user with this email already exists in the system.",
-    #     )
-    #
-    # if not user_in.roles:
-    #     raise HTTPException(
-    #         code="4090",
-    #         msg="The user must have at least one role that exists.",
-    #     )
 
     new_user = await user_controller.create(obj_in=user_in)
     await user_controller.update_roles_by_code(new_user, user_in.roles)
@@ -83,11 +71,7 @@ async def _(user_in: UserCreate):
 @router.patch("/users/{user_id}", summary="更新用户")
 async def _(user_id: int, user_in: UserUpdate):
     user = await user_controller.update(user_id=user_id, obj_in=user_in)
-    # if not user_in.roles:
-    #     raise HTTPException(
-    #         code="4090",
-    #         msg="The user must have at least one role that exists.",
-    #     )
+
 
     await user_controller.update_roles_by_code(user, user_in.roles)
     await insert_log(log_type=LogType.AdminLog, log_detail_type=LogDetailType.UserUpdateOne, by_user_id=0)

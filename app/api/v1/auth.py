@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter
 from fastapi import Form,HTTPException
+from fastapi.responses import JSONResponse
 
 from app.core.utils import insert_log
 from app.services.user import user_controller
@@ -37,6 +38,69 @@ async def _(credentials: CredentialsSchema):
     )
     await insert_log(log_type=LogType.UserLog, log_detail_type=LogDetailType.UserLoginSuccess, by_user_id=user_obj.id)
     return Success(data=data.model_dump(by_alias=True))
+
+
+
+@router.post("/token", summary="OAuth2 登录（Swagger UI 专用）")
+async def auth_token(username: str = Form(...), password: str = Form(...)):
+    try:
+        credentials = CredentialsSchema(userName=username, password=password)
+        user_obj: User | None = await user_controller.authenticate(credentials)
+
+        if user_obj is None:
+            raise HTTPException(status_code=401, detail="用户名或密码错误")
+
+        await user_controller.update_last_login(user_obj.id)
+
+        payload = JWTPayload(
+            data={
+                "userId": user_obj.id,
+                "userName": user_obj.user_name,
+                "tokenType": "accessToken"
+            },
+            iat=datetime.now(timezone.utc),
+            exp=datetime.now(timezone.utc)
+        )
+
+        access_token_payload = payload.model_copy(deep=True)
+        access_token_payload.exp += timedelta(
+            minutes=APP_SETTINGS.JWT_ACCESS_TOKEN_EXPIRE_MINUTES
+        )
+
+
+        
+        # refresh_token_payload = payload.model_copy(deep=True)
+        # refresh_token_payload.data["tokenType"] = "refreshToken"
+        # refresh_token_payload.exp += timedelta(
+        #     minutes=APP_SETTINGS.JWT_REFRESH_TOKEN_EXPIRE_MINUTES
+        # )
+
+        # jwt_out = JWTOut(
+        #     access_token=create_access_token(data=access_token_payload),
+        #     refresh_token=create_access_token(data=refresh_token_payload),
+        # )
+
+       # 注意：Swagger UI 只需要 access_token
+        access_token = create_access_token(data=access_token_payload)
+
+        await insert_log(
+            log_type=LogType.UserLog,
+            log_detail_type=LogDetailType.UserLoginSuccess,
+            by_user_id=user_obj.id,
+        )
+
+        return  JSONResponse(
+        content={
+            "access_token": access_token,
+            "token_type": "bearer"
+        }
+    )
+    except Exception as e:
+        # 打印日志方便调试
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 
 @router.post("/refreshToken", summary="刷新认证")
@@ -104,67 +168,6 @@ async def _(code: str, msg: str):
 
     return Fail(code=code, msg=f"未知错误, code: {code} msg: {msg}")
 
-# todo 以下接口暂时不需要
-# @router.post("/update_password", summary="更新用户密码", dependencies=[DependAuth])
-# async def update_user_password(req_in: UpdatePassword):
-#     # check
-#     # user_controller = UserController()
-#     user: User = await user_controller.get(req_in.id)
-#     verified = verify_password(req_in.old_password, user.password)
-#     if not verified:
-#         return Fail(msg="旧密码验证错误！")
-#     user.password = get_password_hash(req_in.new_password)
-#     await user.save()
-#     return Success(msg="修改成功")
 
 
-@router.post("/token", summary="OAuth2 登录（Swagger UI 专用）", response_model=JWTOut)
-async def auth_token(username: str = Form(...), password: str = Form(...)):
-    try:
-        credentials = CredentialsSchema(userName=username, password=password)
-        user_obj: User | None = await user_controller.authenticate(credentials)
 
-        if user_obj is None:
-            raise HTTPException(status_code=401, detail="用户名或密码错误")
-
-        await user_controller.update_last_login(user_obj.id)
-
-        payload = JWTPayload(
-            data={
-                "userId": user_obj.id,
-                "userName": user_obj.user_name,
-                "tokenType": "accessToken"
-            },
-            iat=datetime.now(timezone.utc),
-            exp=datetime.now(timezone.utc)
-        )
-
-        access_token_payload = payload.model_copy(deep=True)
-        access_token_payload.exp += timedelta(
-            minutes=APP_SETTINGS.JWT_ACCESS_TOKEN_EXPIRE_MINUTES
-        )
-
-        refresh_token_payload = payload.model_copy(deep=True)
-        refresh_token_payload.data["tokenType"] = "refreshToken"
-        refresh_token_payload.exp += timedelta(
-            minutes=APP_SETTINGS.JWT_REFRESH_TOKEN_EXPIRE_MINUTES
-        )
-
-        jwt_out = JWTOut(
-            access_token=create_access_token(data=access_token_payload),
-            refresh_token=create_access_token(data=refresh_token_payload),
-        )
-
-        await insert_log(
-            log_type=LogType.UserLog,
-            log_detail_type=LogDetailType.UserLoginSuccess,
-            by_user_id=user_obj.id,
-        )
-
-        return jwt_out
-
-    except Exception as e:
-        # 打印日志方便调试
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))

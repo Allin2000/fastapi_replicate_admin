@@ -12,7 +12,7 @@ from app.sqlmodel.admin import Role, User, StatusType
 from app.settings.config import APP_SETTINGS
 from app.core.utils import check_url
 
-oauth2_schema = OAuth2PasswordBearer(tokenUrl="api/auth/token")
+oauth2_schema = OAuth2PasswordBearer(tokenUrl="api/v1/auth/token")
 
 
 def check_token(token: str) -> tuple[bool, int, Any]:

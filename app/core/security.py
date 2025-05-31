@@ -5,11 +5,10 @@ from passlib.context import CryptContext
 from app.schemas.login import JWTPayload
 from app.settings.config import APP_SETTINGS
 
-# pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 
-# ALGORITHM = "HS256"
+ALGORITHM = "HS256"
 
 
 def create_access_token(*, data: JWTPayload):
@@ -28,3 +27,4 @@ def get_password_hash(password: str) -> str:
 
 def generate_password() -> str:
     return pwd.genword()
+
