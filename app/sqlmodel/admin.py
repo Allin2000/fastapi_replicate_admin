@@ -26,25 +26,13 @@ class Role(BaseModel, TimestampMixin):
     role_desc = fields.CharField(max_length=500, null=True, blank=True, description="角色描述")
     role_home = fields.CharField(default="home", max_length=100, description="角色首页")
     status = fields.CharEnumField(enum_type=StatusType, default=StatusType.enable, description="状态")
-
     menus = fields.ManyToManyField("app_system.Menu", related_name="role_menus")
-    apis = fields.ManyToManyField("app_system.Api", related_name="role_apis")
     buttons = fields.ManyToManyField("app_system.Button", related_name="role_buttons")
 
     class Meta:
         table = "roles"
 
 
-class Api(BaseModel, TimestampMixin):
-    id = fields.IntField(pk=True, description="API ID")
-    path = fields.CharField(max_length=100, description="API路径")
-    method = fields.CharEnumField(MethodType, description="请求方法")
-    summary = fields.CharField(max_length=500, description="请求简介")
-    tags = fields.JSONField(max_length=500, description="API标签")
-    status = fields.CharEnumField(enum_type=StatusType, default=StatusType.enable, description="状态")
-
-    class Meta:
-        table = "apis"
 
 
 class Menu(BaseModel, TimestampMixin):
@@ -97,7 +85,6 @@ class Log(BaseModel):
     id = fields.IntField(pk=True, description="日志ID")
     log_type = fields.CharEnumField(LogType, description="日志类型")
     by_user = fields.ForeignKeyField("app_system.User", null=True, on_delete=fields.NO_ACTION, description="操作人")
-    api_log = fields.ForeignKeyField("app_system.APILog", null=True, on_delete=fields.SET_NULL, description="API日志")
     log_detail_type = fields.CharEnumField(LogDetailType, null=True, description="日志详情类型")
     create_time = fields.DatetimeField(auto_now_add=True, description="创建时间")
 

@@ -24,10 +24,11 @@ from app.core.exceptions import (
     ResponseValidationHandle,
 )
 from app.core.middlewares import BackGroundTaskMiddleware, APILoggerMiddleware, APILoggerAddResponseMiddleware
-from app.sqlmodel.admin import Menu, Role, User, Button, Api
+from app.sqlmodel.admin import Menu, Role, User, Button
 from app.sqlmodel.base import StatusType, IconType, MenuType
 from app.settings.config import APP_SETTINGS
 from pathlib import Path
+from aerich.migrate import Migrate
 
 
 
@@ -71,40 +72,34 @@ def register_db(app: FastAPI):
 async def modify_db():
     command = Command(tortoise_config=APP_SETTINGS.TORTOISE_ORM, app="app_system")
 
-    # 第一步：safe 初始化数据库（通常只需一次）
-    try:
-        logger.info("Step 1: Safe DB schema init...")
-        await command.init_db(safe=True)
-    except FileExistsError:
-        logger.warning("Database schema already exists. Skipping safe init.")
-    except Exception as e:
-        logger.error(f"Failed to initialize DB: {e}")
-        return
 
     # 第二步：检查是否已有迁移目录，没有才 init
-    migrations_path = Path(APP_SETTINGS.TORTOISE_ORM['migrations'])  # 可能是 "migrations"
+    migrations_path = Path('migrations')  # 可能是 "migrations"
     if not migrations_path.exists():
         logger.info("Step 2: No migrations directory found. Initializing migrations...")
+        await command.init_db(safe=True)
         await command.init()
-    else:
-        logger.info("Migrations directory already exists. Skipping init.")
-
-    # 第三步：生成迁移文件（Tortoise 会判断有没有变更）
-    try:
-        logger.info("Step 3: Generating migration diff...")
         await command.migrate()
-    except Exception as e:
-        logger.error(f"Migration generation failed: {e}")
-        return
-
-    # 第四步：升级数据库（即使迁移文件已存在，也需要升级）
-    try:
-        logger.info("Step 4: Applying migration upgrades...")
         await command.upgrade(run_in_transaction=True)
-        logger.info("Database upgrade complete.")
-    except Exception as e:
-        logger.error(f"Database upgrade failed: {e}")
+        
+    else:
+        logger.info("Migrations directory already exists.")
+        Migrate.migrate_location = "migrations"
 
+        # 生成迁移（如果模型变了才会生成）
+        try:
+            logger.info("Checking for model changes and generating migrations...")
+            await command.migrate()
+        except Exception as e:
+            logger.warning(f"No migration generated or error occurred: {e}")
+
+        # 应用迁移
+        try:
+            logger.info("Applying migration upgrades...")
+            await command.upgrade()
+            logger.info("Database upgrade complete.")
+        except Exception as e:
+            logger.error(f"Database upgrade failed: {e}")
 
 
 
@@ -511,25 +506,6 @@ async def init_menus():
 
     await parent_menu.buttons.add(button_add_del_batch_del)
 
-    parent_menu = await Menu.create(
-        status=StatusType.enable,
-        parent_id=root_menu.id,
-        menu_type=MenuType.menu,
-        menu_name="API管理",
-        route_name="manage_api",
-        route_path="/manage/api",
-        component="view.manage_api",
-        order=2,
-        i18n_key="route.manage_api",
-        icon="ant-design:api-outlined",
-        icon_type=IconType.iconify,
-    )
-    button_refreshAPI = await Button.create(
-        button_code="B_refreshAPI",
-        button_desc="刷新API"
-    )
-
-    await parent_menu.buttons.add(button_refreshAPI)
 
     children_menu = [
         Menu(
@@ -606,34 +582,21 @@ async def init_users():
     if not role_exist:
         # 超级管理员拥有所有菜单
         role_super = await Role.create(role_name="超级管理员", role_code="R_SUPER", role_desc="超级管理员")
+        await Role.get(role_code="R_SUPER")
+
         role_super_menu_objs = await Menu.filter(constant=False)  # 过滤常量路由(公共路由)
         for menu_obj in role_super_menu_objs:
             await role_super.menus.add(menu_obj)
 
         button_code1 = await Button.get(button_code="B_CODE1")
         await role_super.buttons.add(button_code1)
-        button_refreshAPI = await Button.get(button_code="B_refreshAPI")
-        await role_super.buttons.add(button_refreshAPI)
 
         # 管理员拥有 首页 关于 系统管理-API管理 系统管理-用户管理
         role_admin = await Role.create(role_name="管理员", role_code="R_ADMIN", role_desc="管理员")
+        await Role.get(role_code="R_ADMIN")
 
-        role_admin_apis = [
-            ("get", "/api/v1/system-manage/logs"),
-            ("get", "/api/v1/system-manage/apis"),
-            ("get", "/api/v1/system-manage/users"),
-            ("get", "/api/v1/system-manage/roles"),
-            ("post", "/api/v1/system-manage/users"),  #新增用户
-            ("patch", "/api/v1/system-manage/users/{user_id}"),  #修改用户
-            ("delete", "/api/v1/system-manage/users/{user_id}"),  #删除用户
-            ("delete", "/api/v1/system-manage/users"),  #批量删除用户
 
-        ]
-        for api_method, api_path in role_admin_apis:
-            api_obj: Api = await Api.get(method=api_method, path=api_path)
-            await role_admin.apis.add(api_obj)
-
-        role_admin_menus = ["home", "about", "function_toggle-auth", "manage_log", "manage_api", "manage_user"]
+        role_admin_menus = ["home", "about", "function_toggle-auth", "manage_log", "manage_user"]
         for route_name in role_admin_menus:
             menu_obj: Menu = await Menu.get(route_name=route_name)
             await role_admin.menus.add(menu_obj)
@@ -642,14 +605,11 @@ async def init_users():
         await role_admin.buttons.add(button_code2)
         await role_super.buttons.add(button_code2)
 
-        # 普通用户拥有 首页 关于 系统管理-API管理
-        role_user = await Role.create(role_name="普通用户", role_code="R_USER", role_desc="普通用户")
-        role_user_apis = [("get", "/api/v1/system-manage/logs"), ("get", "/api/v1/system-manage/apis")]
-        for api_method, api_path in role_user_apis:
-            api_obj: Api = await Api.get(method=api_method, path=api_path)
-            await role_user.apis.add(api_obj)
 
-        role_user_menus = ["home", "about", "function_toggle-auth", "manage_log", "manage_api"]
+        role_user = await Role.create(role_name="普通用户", role_code="R_USER", role_desc="普通用户")
+        await Role.get(role_code="R_USER")  # 确保已创建
+        
+        role_user_menus = ["home", "about", "function_toggle-auth", "manage_log",]
         for route_name in role_user_menus:
             menu_obj: Menu = await Menu.get(route_name=route_name)
             await role_user.menus.add(menu_obj)

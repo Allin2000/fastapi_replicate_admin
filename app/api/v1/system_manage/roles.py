@@ -5,7 +5,7 @@ from app.core.utils import insert_log
 from app.services.role import role_controller
 from app.services.menu import menu_controller
 from app.core.exceptions import HTTPException
-from app.sqlmodel.admin import Api, Button, Role
+from app.sqlmodel.admin import  Button, Role
 from app.sqlmodel.base import LogType, LogDetailType
 from app.schemas.base import Success, SuccessExtra
 from app.schemas.roles import RoleCreate, RoleUpdate, RoleUpdateAuthrization
@@ -140,27 +140,5 @@ async def _(role_id: int, role_in: RoleUpdateAuthrization):
     return Success(msg="Updated Successfully", data={"button_ids": role_in.button_ids})
 
 
-@router.get("/roles/{role_id}/apis", summary="查看角色API")
-async def _(role_id: int):
-    role_obj = await role_controller.get(id=role_id)
-    if role_obj.role_code == "R_SUPER":
-        api_objs = await Api.all()
-    else:
-        api_objs = await role_obj.apis
-
-    data = {"apiIds": [api_obj.id for api_obj in api_objs]}
-    await insert_log(log_type=LogType.AdminLog, log_detail_type=LogDetailType.RoleGetApis, by_user_id=0)
-    return Success(data=data)
 
 
-@router.patch("/roles/{role_id}/apis", summary="更新角色API")
-async def _(role_id: int, role_in: RoleUpdateAuthrization):
-    role_obj = await role_controller.get(id=role_id)
-    if role_in.api_ids is not None:
-        await role_obj.apis.clear()
-        for api_id in role_in.api_ids:
-            api_obj = await Api.get(id=api_id)
-            await role_obj.apis.add(api_obj)
-
-    await insert_log(log_type=LogType.AdminLog, log_detail_type=LogDetailType.RoleUpdateApis, by_user_id=0)
-    return Success(msg="Updated Successfully", data={"api_ids": role_in.api_ids})

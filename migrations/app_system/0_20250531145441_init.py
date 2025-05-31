@@ -25,22 +25,6 @@ COMMENT ON COLUMN "api_logs"."response_data" IS '响应数据';
 COMMENT ON COLUMN "api_logs"."response_code" IS '响应业务码';
 COMMENT ON COLUMN "api_logs"."create_time" IS '创建时间';
 COMMENT ON COLUMN "api_logs"."process_time" IS '请求处理时间';
-CREATE TABLE IF NOT EXISTS "apis" (
-    "create_time" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "update_time" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "id" SERIAL NOT NULL PRIMARY KEY,
-    "path" VARCHAR(100) NOT NULL,
-    "method" VARCHAR(6) NOT NULL,
-    "summary" VARCHAR(500) NOT NULL,
-    "tags" JSONB NOT NULL,
-    "status" VARCHAR(1) NOT NULL DEFAULT '1'
-);
-COMMENT ON COLUMN "apis"."id" IS 'API ID';
-COMMENT ON COLUMN "apis"."path" IS 'API路径';
-COMMENT ON COLUMN "apis"."method" IS '请求方法';
-COMMENT ON COLUMN "apis"."summary" IS '请求简介';
-COMMENT ON COLUMN "apis"."tags" IS 'API标签';
-COMMENT ON COLUMN "apis"."status" IS '状态';
 CREATE TABLE IF NOT EXISTS "buttons" (
     "create_time" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "update_time" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -146,14 +130,12 @@ CREATE TABLE IF NOT EXISTS "logs" (
     "log_type" VARCHAR(1) NOT NULL,
     "log_detail_type" VARCHAR(4),
     "create_time" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "api_log_id" INT REFERENCES "api_logs" ("id") ON DELETE SET NULL,
     "by_user_id" INT REFERENCES "users" ("id") ON DELETE NO ACTION
 );
 COMMENT ON COLUMN "logs"."id" IS '日志ID';
 COMMENT ON COLUMN "logs"."log_type" IS '日志类型';
 COMMENT ON COLUMN "logs"."log_detail_type" IS '日志详情类型';
 COMMENT ON COLUMN "logs"."create_time" IS '创建时间';
-COMMENT ON COLUMN "logs"."api_log_id" IS 'API日志';
 COMMENT ON COLUMN "logs"."by_user_id" IS '操作人';
 CREATE TABLE IF NOT EXISTS "aerich" (
     "id" SERIAL NOT NULL PRIMARY KEY,
@@ -171,11 +153,6 @@ CREATE TABLE IF NOT EXISTS "roles_menus" (
     "menu_id" INT NOT NULL REFERENCES "menus" ("id") ON DELETE CASCADE
 );
 CREATE UNIQUE INDEX IF NOT EXISTS "uidx_roles_menus_roles_i_3d4119" ON "roles_menus" ("roles_id", "menu_id");
-CREATE TABLE IF NOT EXISTS "roles_apis" (
-    "roles_id" INT NOT NULL REFERENCES "roles" ("id") ON DELETE CASCADE,
-    "api_id" INT NOT NULL REFERENCES "apis" ("id") ON DELETE CASCADE
-);
-CREATE UNIQUE INDEX IF NOT EXISTS "uidx_roles_apis_roles_i_753aef" ON "roles_apis" ("roles_id", "api_id");
 CREATE TABLE IF NOT EXISTS "roles_buttons" (
     "roles_id" INT NOT NULL REFERENCES "roles" ("id") ON DELETE CASCADE,
     "button_id" INT NOT NULL REFERENCES "buttons" ("id") ON DELETE CASCADE

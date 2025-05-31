@@ -1,5 +1,5 @@
 from app.core.crud import CRUDBase
-from app.sqlmodel.admin import Api, Button, Role
+from app.sqlmodel.admin import  Button, Role
 from app.schemas.roles import RoleCreate, RoleUpdate
 
 
@@ -30,16 +30,7 @@ class RoleController(CRUDBase[Role, RoleCreate, RoleUpdate]):
             await role.buttons.add(button_obj)
         return True
 
-    @staticmethod
-    async def update_apis_by_code(role: Role, apis_codes: list[str] | None = None) -> bool:
-        if not apis_codes:
-            return False
 
-        await role.apis.clear()
-        for api_code in apis_codes:
-            api_obj = await Api.get(api_code=api_code)
-            await role.apis.add(api_obj)
-        return True
 
 
 role_controller = RoleController()
