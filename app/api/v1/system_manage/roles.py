@@ -9,6 +9,7 @@ from app.sqlmodel.admin import  Button, Role
 from app.sqlmodel.base import LogType, LogDetailType
 from app.schemas.base import Success, SuccessExtra
 from app.schemas.roles import RoleCreate, RoleUpdate, RoleUpdateAuthrization
+from app.core.utils import model_to_dict
 
 router = APIRouter()
 
@@ -30,7 +31,8 @@ async def _(
         q &= Q(status__contains=status)
 
     total, role_objs = await role_controller.list(page=current, page_size=size, search=q, order=["id"])
-    records = [await role_obj.to_dict(exclude_fields=["role_desc"]) for role_obj in role_objs]
+    # records = [await role_obj.to_dict(exclude_fields=["role_desc"]) for role_obj in role_objs]
+    records = [await model_to_dict(role_obj, exclude_fields=["role_desc"]) for role_obj in role_objs]
     data = {"records": records}
     await insert_log(log_type=LogType.AdminLog, log_detail_type=LogDetailType.RoleGetList, by_user_id=0)
     return SuccessExtra(data=data, total=total, current=current, size=size)
@@ -39,7 +41,8 @@ async def _(
 @router.get("/roles/{role_id}", summary="查看角色")
 async def get_role(role_id: int):
     role_obj: Role = await role_controller.get(id=role_id)
-    data = await role_obj.to_dict()
+    # data = await role_obj.to_dict()
+    data = await model_to_dict(role_obj)
     await insert_log(log_type=LogType.AdminLog, log_detail_type=LogDetailType.RoleGetOne, by_user_id=0)
     return Success(data=data)
 

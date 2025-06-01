@@ -8,6 +8,7 @@ from app.services.user import user_controller
 from app.sqlmodel.base import LogType, LogDetailType
 from app.schemas.base import Success, SuccessExtra
 from app.schemas.users import UserCreate, UserUpdate
+from app.core.utils import model_to_dict
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,8 @@ async def _(
     total, user_objs = await user_controller.list(page=current, page_size=size, search=q, order=["id"])
     records = []
     for user_obj in user_objs:
-        record = await user_obj.to_dict(exclude_fields=["password"])
+        # record = await user_obj.to_dict(exclude_fields=["password"])
+        record = await model_to_dict(user_obj,exclude_fields=["password"])
         await user_obj.fetch_related('roles')
         user_roles = [r.role_code for r in user_obj.roles]
         record.update({"userRoles": user_roles})
@@ -56,7 +58,8 @@ async def _(
 async def get_user(user_id: int):
     user_obj = await user_controller.get(id=user_id)
     await insert_log(log_type=LogType.AdminLog, log_detail_type=LogDetailType.UserGetOne, by_user_id=0)
-    return Success(data=await user_obj.to_dict(exclude_fields=["password"]))
+    # return Success(data=await user_obj.to_dict(exclude_fields=["password"]))
+    return Success(data=await model_to_dict(user_obj,exclude_fields=["password"]))
 
 
 @router.post("/users", summary="创建用户")

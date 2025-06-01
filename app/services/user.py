@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from app.core.crud import CRUDBase
+from app.services.crud import CRUDBase
 from app.core.exceptions import HTTPException
 from app.sqlmodel.admin import Role, User, Log, StatusType
 from app.sqlmodel.base import LogType, LogDetailType

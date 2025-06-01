@@ -1,4 +1,4 @@
-from app.core.crud import CRUDBase
+from app.services.crud import CRUDBase
 from app.sqlmodel.admin import  Button, Role
 from app.schemas.roles import RoleCreate, RoleUpdate
 

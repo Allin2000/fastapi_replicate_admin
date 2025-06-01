@@ -26,7 +26,6 @@ from app.core.exceptions import (
 from app.core.middlewares import BackGroundTaskMiddleware, APILoggerMiddleware, APILoggerAddResponseMiddleware
 from app.sqlmodel.admin import Menu, Role, User, Button
 from app.sqlmodel.base import StatusType, IconType, MenuType
-from app.settings.config import APP_SETTINGS
 from pathlib import Path
 from aerich.migrate import Migrate
 

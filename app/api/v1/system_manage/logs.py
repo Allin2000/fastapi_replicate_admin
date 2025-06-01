@@ -10,6 +10,7 @@ from app.sqlmodel.admin import User, Role, Log, APILog
 from app.sqlmodel.base import LogType
 from app.schemas.base import Success, SuccessExtra, Fail
 from app.schemas.logs import LogUpdate, LogSearch
+from app.core.utils import model_to_dict
 
 router = APIRouter()
 
@@ -60,7 +61,8 @@ async def _(log_in: LogSearch = Depends()):
     for obj in log_objs:
         api_log: APILog = await obj.api_log  # type: ignore
         by_user: User = await obj.by_user  # type: ignore
-        data = await obj.to_dict(exclude_fields=["by_user_id", "api_log_id"])
+        # data = await obj.to_dict(exclude_fields=["by_user_id", "api_log_id"])
+        data = await model_to_dict(obj,exclude_fields=["by_user_id", "api_log_id"])
         if log_in.log_type == LogType.ApiLog:
             data["requestUrl"] = api_log.request_url
             data["responseCode"] = api_log.response_code
@@ -78,7 +80,8 @@ async def _(log_in: LogSearch = Depends()):
 @router.get("/logs/{log_id}", summary="查看日志")
 async def _(log_id: int):
     log_obj = await log_controller.get(id=log_id)
-    data = await log_obj.to_dict(exclude_fields=["id", "create_time", "update_time"])
+    # data = await log_obj.to_dict(exclude_fields=["id", "create_time", "update_time"])
+    data = await model_to_dict(log_obj,exclude_fields=["id", "create_time", "update_time"])
     return Success(data=data)
 
 

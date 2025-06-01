@@ -9,6 +9,7 @@ from app.sqlmodel.base import LogType, LogDetailType
 
 from app.schemas.base import Success, SuccessExtra
 from app.schemas.menus import MenuCreate, MenuUpdate
+from app.core.utils import model_to_dict
 
 router = APIRouter()
 
@@ -28,8 +29,10 @@ async def build_menu_tree(menus: list[Menu], parent_id: int = 0, simple: bool = 
             if simple:
                 menu_dict = {"id": menu.id, "label": menu.menu_name, "pId": menu.parent_id}
             else:
-                menu_dict = await menu.to_dict()
-                menu_dict["buttons"] = [await button.to_dict() for button in await menu.buttons]
+                # menu_dict = await menu.to_dict()
+                menu_dict = await model_to_dict(menu)
+                # menu_dict["buttons"] = [await button.to_dict() for button in await menu.buttons]
+                menu_dict["buttons"] = [await model_to_dict(button) for button in await menu.buttons]
             if children:
                 menu_dict["children"] = children
             tree.append(menu_dict)
@@ -62,7 +65,8 @@ async def _():
 async def get_menu(menu_id: int):
     menu_obj: Menu = await menu_controller.get(id=menu_id)
     await insert_log(log_type=LogType.AdminLog, log_detail_type=LogDetailType.MenuGetOne, by_user_id=0)
-    return Success(data=await menu_obj.to_dict())
+    # return Success(data=await menu_obj.to_dict())
+    return Success(data=await model_to_dict(menu_obj))
 
 
 @router.post("/menus", summary="创建菜单")

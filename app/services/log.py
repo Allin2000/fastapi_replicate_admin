@@ -1,4 +1,4 @@
-from app.core.crud import CRUDBase
+from app.services.crud import CRUDBase
 from app.sqlmodel.admin import Log
 from app.schemas.logs import LogCreate, LogUpdate
 

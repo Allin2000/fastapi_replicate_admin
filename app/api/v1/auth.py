@@ -14,6 +14,7 @@ from app.schemas.base import Fail, Success
 from app.schemas.login import CredentialsSchema, JWTOut, JWTPayload
 from app.settings.config import APP_SETTINGS
 from app.core.security import create_access_token
+from app.core.utils import model_to_dict
 
 router = APIRouter()
 
@@ -143,7 +144,8 @@ async def _(jwt_token: JWTOut):
 async def _():
     user_id = CTX_USER_ID.get()
     user_obj: User = await user_controller.get(id=user_id)
-    data = await user_obj.to_dict(exclude_fields=["password"])
+    # data = await user_obj.to_dict(exclude_fields=["password"])
+    data = await model_to_dict(user_obj,exclude_fields=["password"])
 
     user_roles: list[Role] = await user_obj.roles
     user_role_codes = [user_role.role_code for user_role in user_roles]

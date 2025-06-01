@@ -1,9 +1,9 @@
 from tortoise import fields
 
-from app.sqlmodel.base import BaseModel, TimestampMixin, GenderType, IconType, MenuType, MethodType, StatusType, LogType, LogDetailType
+from app.sqlmodel.base import BaseModel, GenderType, IconType, MenuType,StatusType, LogType, LogDetailType
 
 
-class User(BaseModel, TimestampMixin):
+class User(BaseModel):
     id = fields.IntField(pk=True, description="用户ID")
     user_name = fields.CharField(max_length=20, unique=True, description="用户名称")
     password = fields.CharField(max_length=128, description="密码")
@@ -14,12 +14,14 @@ class User(BaseModel, TimestampMixin):
     last_login = fields.DatetimeField(null=True, description="最后登录时间")
     roles = fields.ManyToManyField("app_system.Role", related_name="user_roles")
     status = fields.CharEnumField(enum_type=StatusType, default=StatusType.enable, description="状态")
+    create_time = fields.DatetimeField(auto_now_add=True)
+    update_time = fields.DatetimeField(auto_now=True)
 
     class Meta:
         table = "users"
 
 
-class Role(BaseModel, TimestampMixin):
+class Role(BaseModel):
     id = fields.IntField(pk=True, description="角色ID")
     role_name = fields.CharField(max_length=20, unique=True, description="角色名称")
     role_code = fields.CharField(max_length=20, unique=True, description="角色编码")
@@ -28,6 +30,8 @@ class Role(BaseModel, TimestampMixin):
     status = fields.CharEnumField(enum_type=StatusType, default=StatusType.enable, description="状态")
     menus = fields.ManyToManyField("app_system.Menu", related_name="role_menus")
     buttons = fields.ManyToManyField("app_system.Button", related_name="role_buttons")
+    create_time = fields.DatetimeField(auto_now_add=True)
+    update_time = fields.DatetimeField(auto_now=True)
 
     class Meta:
         table = "roles"
@@ -35,7 +39,7 @@ class Role(BaseModel, TimestampMixin):
 
 
 
-class Menu(BaseModel, TimestampMixin):
+class Menu(BaseModel):
     id = fields.IntField(pk=True, description="菜单ID")
     menu_name = fields.CharField(max_length=100, description="菜单名称")
     menu_type = fields.CharEnumField(MenuType, description="菜单类型")
@@ -66,16 +70,20 @@ class Menu(BaseModel, TimestampMixin):
     constant = fields.BooleanField(default=False, description="是否为公共路由")
 
     buttons = fields.ManyToManyField("app_system.Button", related_name="menu_buttons")
+    create_time = fields.DatetimeField(auto_now_add=True)
+    update_time = fields.DatetimeField(auto_now=True)
 
     class Meta:
         table = "menus"
 
 
-class Button(BaseModel, TimestampMixin):
+class Button(BaseModel):
     id = fields.IntField(pk=True, description="菜单ID")
     button_code = fields.CharField(max_length=200, description="按钮编码")
     button_desc = fields.CharField(max_length=200, description="按钮描述")
     status = fields.CharEnumField(enum_type=StatusType, default=StatusType.enable, description="状态")
+    create_time = fields.DatetimeField(auto_now_add=True)
+    update_time = fields.DatetimeField(auto_now=True)
 
     class Meta:
         table = "buttons"

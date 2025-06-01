@@ -5,6 +5,7 @@ from app.core.ctx import CTX_USER_ID
 from app.core.dependency import DependAuth
 from app.sqlmodel.admin import Menu, Role, User
 from app.schemas.base import Success
+from app.core.utils import model_to_dict
 
 router = APIRouter()
 
@@ -52,7 +53,8 @@ async def build_route_tree(menus: list[Menu], parent_id: int = 0, simple: bool =
                 if menu.hide_in_menu and not menu.constant:
                     menu_dict["meta"]["hideInMenu"] = menu.hide_in_menu
             else:
-                menu_dict = await menu.to_dict()
+                # menu_dict = await menu.to_dict()
+                menu_dict = await model_to_dict(menu)
             if children:
                 menu_dict["children"] = children
             tree.append(menu_dict)
