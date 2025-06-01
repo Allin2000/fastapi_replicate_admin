@@ -74,10 +74,10 @@ class Settings(BaseSettings):
                     "default_connection": "conn_system"
                 },
                 # 新增 public 应用
-                "app_public": {
-                    "models": ["app.models.public"],  # 指向新模型
-                    "default_connection": "conn_public"  # 使用第二个连接
-            }
+            #     "app_public": {
+            #         "models": ["app.models.public"],  # 指向新模型
+            #         "default_connection": "conn_public"  # 使用第二个连接
+            # }
 
             },
             "use_tz": False,
