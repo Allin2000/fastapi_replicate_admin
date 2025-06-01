@@ -1,5 +1,17 @@
 from tortoise import models, fields
 
+from tortoise.fields import DatetimeField
+
+class NaiveDatetimeField(DatetimeField):
+    """
+    一个自定义的 DatetimeField，它强制在数据库中创建
+    TIMESTAMP WITHOUT TIME ZONE 类型的列，以匹配 SQLAlchemy 的默认行为。
+    """
+    @property
+    def SQL_TYPE(self) -> str:
+        # 对于 PostgreSQL, "TIMESTAMP" 就是 "TIMESTAMP WITHOUT TIME ZONE"
+        return "TIMESTAMP"
+
 # 用户表
 class PublicUser(models.Model):
     id = fields.IntField(pk=True)
@@ -24,7 +36,8 @@ class Article(models.Model):
     description = fields.TextField()
     body = fields.TextField()
     created_at = fields.DatetimeField()
-    updated_at = fields.DatetimeField(null=True)
+    # updated_at = fields.DatetimeField(use_tz=False,null=True)
+    updated_at = NaiveDatetimeField(auto_now=True, description="更新时间")
     # 修复：使用正确的模型引用格式
     author = fields.ForeignKeyField(
         "app_public.PublicUser", related_name="articles", on_delete=fields.CASCADE

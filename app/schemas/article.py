@@ -18,7 +18,6 @@ class ArticleUpdate(BaseModel):
     title: str | None = None
     description: str | None = None
     body: str | None = None
-    updated_at: datetime | None = None
 
 
 
