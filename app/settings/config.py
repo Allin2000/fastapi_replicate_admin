@@ -42,42 +42,41 @@ class Settings(BaseSettings):
     @property
     def TORTOISE_ORM(self) -> dict:
         return {
-            "connections": {
-                "conn_system": {
-                    "engine": "tortoise.backends.asyncpg",
-                    "credentials": {
-                        "host": self.DB_HOST,
-                        "port": self.DB_PORT,
-                        "user": self.DB_USER,
-                        "password": self.DB_PASSWORD,
-                        "database": self.DB_NAME,
-                        "server_settings": {"search_path": f"{self.ADMIN_SCHEMA}"}
-                    }
+        "connections": {
+            "conn_system": {
+                "engine": "tortoise.backends.asyncpg",
+                "credentials": {
+                    "host": self.DB_HOST,
+                    "port": self.DB_PORT,
+                    "user": self.DB_USER,
+                    "password": self.DB_PASSWORD,
+                    "database": self.DB_NAME,
+                    "server_settings": {"search_path": f"{self.ADMIN_SCHEMA}"}
                 }
             },
-            "conn_public": {
-                    "engine": "tortoise.backends.asyncpg",
-                    "credentials": {
-                        "host": self.DB_HOST,
-                        "port": self.DB_PORT,
-                        "user": self.DB_USER,
-                        "password": self.DB_PASSWORD,
-                        "database": self.DB_NAME,
-                        # 对于 public 模式，默认搜索路径设为 public，同时包含 admin 以便跨 schema 引用
-                        "server_settings":{"search_path": f"{self.PUBLIC_SCHEMA}"}
-                    },
-                    "maxsize": 10 # 可以调整连接池大小
+            "conn_public": {  # 👈 注意这应该是 connections 的子项
+                "engine": "tortoise.backends.asyncpg",
+                "credentials": {
+                    "host": self.DB_HOST,
+                    "port": self.DB_PORT,
+                    "user": self.DB_USER,
+                    "password": self.DB_PASSWORD,
+                    "database": self.DB_NAME,
+                    "server_settings": {"search_path": f"{self.PUBLIC_SCHEMA}"}
                 },
+                "maxsize": 10
+            }
+        },
             "apps": {
                 "app_system": {
                     "models": ["app.sqlmodel.admin", "aerich.models"],
                     "default_connection": "conn_system"
                 },
                 # 新增 public 应用
-            #     "app_public": {
-            #         "models": ["app.models.public"],  # 指向新模型
-            #         "default_connection": "conn_public"  # 使用第二个连接
-            # }
+                "app_public": {
+                    "models": ["app.sqlmodel.public"],  # 指向新模型
+                    "default_connection": "conn_public"  # 使用第二个连接
+            }
 
             },
             "use_tz": False,
