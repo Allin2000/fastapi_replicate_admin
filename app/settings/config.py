@@ -64,7 +64,7 @@ class Settings(BaseSettings):
                         "password": self.DB_PASSWORD,
                         "database": self.DB_NAME,
                         # 对于 public 模式，默认搜索路径设为 public，同时包含 admin 以便跨 schema 引用
-                        "server_settings":{"search_path": f"{self.PUBLIC_SCHEMA},{self.ADMIN_SCHEMA}"}
+                        "server_settings":{"search_path": f"{self.PUBLIC_SCHEMA}"}
                     },
                     "maxsize": 10 # 可以调整连接池大小
                 },
@@ -72,7 +72,13 @@ class Settings(BaseSettings):
                 "app_system": {
                     "models": ["app.sqlmodel.admin", "aerich.models"],
                     "default_connection": "conn_system"
-                }
+                },
+                # 新增 public 应用
+                "app_public": {
+                    "models": ["app.models.public"],  # 指向新模型
+                    "default_connection": "conn_public"  # 使用第二个连接
+            }
+
             },
             "use_tz": False,
             "timezone": "Asia/Shanghai"
