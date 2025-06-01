@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "aerich[toml]>=0.9.0",
+    "argon2-cffi>=23.1.0",
     "email-validator>=2.2.0",
     "fastapi>=0.115.12",
     "loguru>=0.7.3",

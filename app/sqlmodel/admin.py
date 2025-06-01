@@ -19,6 +19,7 @@ class User(BaseModel):
 
     class Meta:
         table = "users"
+        schema = "admin"
 
 
 class Role(BaseModel):
@@ -35,6 +36,7 @@ class Role(BaseModel):
 
     class Meta:
         table = "roles"
+        schema = "admin"
 
 
 
@@ -75,6 +77,7 @@ class Menu(BaseModel):
 
     class Meta:
         table = "menus"
+        schema = "admin"
 
 
 class Button(BaseModel):
@@ -87,6 +90,7 @@ class Button(BaseModel):
 
     class Meta:
         table = "buttons"
+        schema = "admin"
 
 
 class Log(BaseModel):
@@ -99,6 +103,7 @@ class Log(BaseModel):
 
     class Meta:
         table = "logs"
+        schema = "admin"
 
 
 class APILog(BaseModel):
@@ -115,6 +120,7 @@ class APILog(BaseModel):
 
     class Meta:
         table = "api_logs"
+        schema = "admin"
 
 
 

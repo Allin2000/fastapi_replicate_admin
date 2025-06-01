@@ -26,20 +26,18 @@ COMMENT ON COLUMN "api_logs"."response_code" IS '响应业务码';
 COMMENT ON COLUMN "api_logs"."create_time" IS '创建时间';
 COMMENT ON COLUMN "api_logs"."process_time" IS '请求处理时间';
 CREATE TABLE IF NOT EXISTS "buttons" (
-    "create_time" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "update_time" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "id" SERIAL NOT NULL PRIMARY KEY,
     "button_code" VARCHAR(200) NOT NULL,
     "button_desc" VARCHAR(200) NOT NULL,
-    "status" VARCHAR(1) NOT NULL DEFAULT '1'
+    "status" VARCHAR(1) NOT NULL DEFAULT '1',
+    "create_time" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "update_time" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 COMMENT ON COLUMN "buttons"."id" IS '菜单ID';
 COMMENT ON COLUMN "buttons"."button_code" IS '按钮编码';
 COMMENT ON COLUMN "buttons"."button_desc" IS '按钮描述';
 COMMENT ON COLUMN "buttons"."status" IS '状态';
 CREATE TABLE IF NOT EXISTS "menus" (
-    "create_time" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "update_time" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "id" SERIAL NOT NULL PRIMARY KEY,
     "menu_name" VARCHAR(100) NOT NULL,
     "menu_type" VARCHAR(1) NOT NULL,
@@ -62,7 +60,9 @@ CREATE TABLE IF NOT EXISTS "menus" (
     "status" VARCHAR(1) NOT NULL DEFAULT '1',
     "redirect" VARCHAR(200),
     "props" BOOL NOT NULL DEFAULT False,
-    "constant" BOOL NOT NULL DEFAULT False
+    "constant" BOOL NOT NULL DEFAULT False,
+    "create_time" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "update_time" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 COMMENT ON COLUMN "menus"."id" IS '菜单ID';
 COMMENT ON COLUMN "menus"."menu_name" IS '菜单名称';
@@ -88,14 +88,14 @@ COMMENT ON COLUMN "menus"."redirect" IS '重定向路径';
 COMMENT ON COLUMN "menus"."props" IS '是否为首路由';
 COMMENT ON COLUMN "menus"."constant" IS '是否为公共路由';
 CREATE TABLE IF NOT EXISTS "roles" (
-    "create_time" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "update_time" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "id" SERIAL NOT NULL PRIMARY KEY,
     "role_name" VARCHAR(20) NOT NULL UNIQUE,
     "role_code" VARCHAR(20) NOT NULL UNIQUE,
     "role_desc" VARCHAR(500),
     "role_home" VARCHAR(100) NOT NULL DEFAULT 'home',
-    "status" VARCHAR(1) NOT NULL DEFAULT '1'
+    "status" VARCHAR(1) NOT NULL DEFAULT '1',
+    "create_time" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "update_time" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 COMMENT ON COLUMN "roles"."id" IS '角色ID';
 COMMENT ON COLUMN "roles"."role_name" IS '角色名称';
@@ -104,8 +104,6 @@ COMMENT ON COLUMN "roles"."role_desc" IS '角色描述';
 COMMENT ON COLUMN "roles"."role_home" IS '角色首页';
 COMMENT ON COLUMN "roles"."status" IS '状态';
 CREATE TABLE IF NOT EXISTS "users" (
-    "create_time" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "update_time" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "id" SERIAL NOT NULL PRIMARY KEY,
     "user_name" VARCHAR(20) NOT NULL UNIQUE,
     "password" VARCHAR(128) NOT NULL,
@@ -114,7 +112,9 @@ CREATE TABLE IF NOT EXISTS "users" (
     "user_email" VARCHAR(255) NOT NULL UNIQUE,
     "user_phone" VARCHAR(20),
     "last_login" TIMESTAMPTZ,
-    "status" VARCHAR(1) NOT NULL DEFAULT '1'
+    "status" VARCHAR(1) NOT NULL DEFAULT '1',
+    "create_time" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "update_time" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 COMMENT ON COLUMN "users"."id" IS '用户ID';
 COMMENT ON COLUMN "users"."user_name" IS '用户名称';
@@ -150,16 +150,16 @@ CREATE TABLE IF NOT EXISTS "menus_buttons" (
     "button_id" INT NOT NULL REFERENCES "buttons" ("id") ON DELETE CASCADE
 );
 CREATE UNIQUE INDEX IF NOT EXISTS "uidx_menus_butto_menus_i_a9336b" ON "menus_buttons" ("menus_id", "button_id");
-CREATE TABLE IF NOT EXISTS "roles_menus" (
-    "roles_id" INT NOT NULL REFERENCES "roles" ("id") ON DELETE CASCADE,
-    "menu_id" INT NOT NULL REFERENCES "menus" ("id") ON DELETE CASCADE
-);
-CREATE UNIQUE INDEX IF NOT EXISTS "uidx_roles_menus_roles_i_3d4119" ON "roles_menus" ("roles_id", "menu_id");
 CREATE TABLE IF NOT EXISTS "roles_buttons" (
     "roles_id" INT NOT NULL REFERENCES "roles" ("id") ON DELETE CASCADE,
     "button_id" INT NOT NULL REFERENCES "buttons" ("id") ON DELETE CASCADE
 );
 CREATE UNIQUE INDEX IF NOT EXISTS "uidx_roles_butto_roles_i_f9441d" ON "roles_buttons" ("roles_id", "button_id");
+CREATE TABLE IF NOT EXISTS "roles_menus" (
+    "roles_id" INT NOT NULL REFERENCES "roles" ("id") ON DELETE CASCADE,
+    "menu_id" INT NOT NULL REFERENCES "menus" ("id") ON DELETE CASCADE
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "uidx_roles_menus_roles_i_3d4119" ON "roles_menus" ("roles_id", "menu_id");
 CREATE TABLE IF NOT EXISTS "users_roles" (
     "users_id" INT NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE,
     "role_id" INT NOT NULL REFERENCES "roles" ("id") ON DELETE CASCADE

@@ -6,6 +6,7 @@ from tortoise import models
 class BaseModel(models.Model):
     class Meta:
         abstract = True
+        schema = "admin"
 
 
 

@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     DB_USER: str
     DB_PASSWORD: str
     DB_NAME: str
+    PUBLIC_SCHEMA: str = "public"
+    ADMIN_SCHEMA: str = "admin" 
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
@@ -48,10 +50,24 @@ class Settings(BaseSettings):
                         "port": self.DB_PORT,
                         "user": self.DB_USER,
                         "password": self.DB_PASSWORD,
-                        "database": self.DB_NAME
+                        "database": self.DB_NAME,
+                        "server_settings": {"search_path": f"{self.ADMIN_SCHEMA}"}
                     }
                 }
             },
+            "conn_public": {
+                    "engine": "tortoise.backends.asyncpg",
+                    "credentials": {
+                        "host": self.DB_HOST,
+                        "port": self.DB_PORT,
+                        "user": self.DB_USER,
+                        "password": self.DB_PASSWORD,
+                        "database": self.DB_NAME,
+                        # 对于 public 模式，默认搜索路径设为 public，同时包含 admin 以便跨 schema 引用
+                        "server_settings":{"search_path": f"{self.PUBLIC_SCHEMA},{self.ADMIN_SCHEMA}"}
+                    },
+                    "maxsize": 10 # 可以调整连接池大小
+                },
             "apps": {
                 "app_system": {
                     "models": ["app.sqlmodel.admin", "aerich.models"],
