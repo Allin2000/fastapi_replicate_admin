@@ -72,10 +72,10 @@ async def _(article_id: int):
     return Success(data=data)
 
 
-# @router.patch("/articles/{article_id}", summary="更新文章")
-# async def _(article_id: int, article_in: ArticleUpdate):
-#     await article_controller.update(id=article_id, obj_in=article_in)
-#     return Success(msg="Update Successfully")
+@router.patch("/articles/{article_id}", summary="更新文章")
+async def _(article_id: int, article_in: ArticleUpdate):
+    await article_controller.update(id=article_id, obj_in=article_in)
+    return Success(msg="Update Successfully")
 
 
 @router.delete("/articles/{article_id}", summary="删除文章")

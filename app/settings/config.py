@@ -80,7 +80,7 @@ class Settings(BaseSettings):
 
             },
             "use_tz": False,
-            "timezone": "Asia/Shanghai"
+            # "timezone": "Asia/Shanghai"
         }
 
 
