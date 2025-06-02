@@ -10,7 +10,7 @@ from app.core.exceptions import (
 )
 from app.sqlmodel.admin import Role, User, StatusType
 from app.settings.config import APP_SETTINGS
-from app.core.utils import check_url
+# from app.core.utils import check_url
 
 oauth2_schema = OAuth2PasswordBearer(tokenUrl="api/v1/auth/token")
 
@@ -49,30 +49,30 @@ class AuthControl:
         return user
 
 
-class PermissionControl:
-    @classmethod
-    async def has_permission(cls, request: Request, current_user: User = Depends(AuthControl.is_authed)) -> None:
-        user_roles: list[Role] = await current_user.roles
-        user_roles_codes: list[str] = [r.role_code for r in user_roles]
-        if "R_SUPER" in user_roles_codes:  # 超级管理员
-            return
+# class PermissionControl:
+#     @classmethod
+#     async def has_permission(cls, request: Request, current_user: User = Depends(AuthControl.is_authed)) -> None:
+#         user_roles: list[Role] = await current_user.roles
+#         user_roles_codes: list[str] = [r.role_code for r in user_roles]
+#         if "R_SUPER" in user_roles_codes:  # 超级管理员
+#             return
 
-        if not user_roles:
-            raise HTTPException(code="4040", msg="The user is not bound to a role")
+#         if not user_roles:
+#             raise HTTPException(code="4040", msg="The user is not bound to a role")
 
-        method = request.method.lower()
-        path = request.url.path
+#         method = request.method.lower()
+#         path = request.url.path
 
-        apis = [await role.apis for role in user_roles]
-        permission_apis = list(set((api.method.value, api.path, api.status) for api in sum(apis, [])))
-        for (api_method, api_path, api_status) in permission_apis:
-            if api_method == method and check_url(api_path, request.url.path):  # API权限检测通过
-                if api_status == StatusType.disable:
-                    raise HTTPException(code="4030", msg=f"The API has been disabled, method: {method} path: {path}")
-                return
+#         apis = [await role.apis for role in user_roles]
+#         permission_apis = list(set((api.method.value, api.path, api.status) for api in sum(apis, [])))
+#         for (api_method, api_path, api_status) in permission_apis:
+#             if api_method == method and check_url(api_path, request.url.path):  # API权限检测通过
+#                 if api_status == StatusType.disable:
+#                     raise HTTPException(code="4030", msg=f"The API has been disabled, method: {method} path: {path}")
+#                 return
 
-        raise HTTPException(code="4030", msg=f"Permission denied, method: {method} path: {path}")
+#         raise HTTPException(code="4030", msg=f"Permission denied, method: {method} path: {path}")
 
 
 DependAuth = Depends(AuthControl.is_authed)
-DependPermission = Depends(PermissionControl.has_permission)
+# DependPermission = Depends(PermissionControl.has_permission)

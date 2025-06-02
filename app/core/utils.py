@@ -1,16 +1,15 @@
-# import datetime
-
-# import time
-
-# import orjson
-
 import re
+from uuid import UUID
+from datetime import datetime
+
+from tortoise import models
+
 from app.core.ctx import CTX_USER_ID
 from app.sqlmodel.admin import  Log
 from app.sqlmodel.base import LogType, LogDetailType
-from datetime import datetime
-from uuid import UUID
-from tortoise import models
+
+
+
 
 
 def to_lower_camel_case(x):
@@ -84,11 +83,11 @@ async def insert_log(log_type: LogType, log_detail_type: LogDetailType, by_user_
 
 
 
-def check_url(url: str = "/api/v1/system-manage/roles/{role_id}/buttons", url2: str = "/api/v1/system-manage/roles/1/buttons") -> bool:
-    pattern = re.sub(r'\{.*?}', '[^/]+', url)
-    if re.match(pattern, url2):
-        return True
-    return False
+# def check_url(url: str = "/api/v1/system-manage/roles/{role_id}/buttons", url2: str = "/api/v1/system-manage/roles/1/buttons") -> bool:
+#     pattern = re.sub(r'\{.*?}', '[^/]+', url)
+#     if re.match(pattern, url2):
+#         return True
+#     return False
 
 
 # LAYOUT_PREFIX = 'layout.'

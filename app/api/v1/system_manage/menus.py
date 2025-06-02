@@ -3,10 +3,8 @@ from tortoise.functions import Count
 
 from app.core.utils import insert_log
 from app.services.menu import menu_controller
-
 from app.sqlmodel.admin import Menu
 from app.sqlmodel.base import LogType, LogDetailType
-
 from app.schemas.base import Success, SuccessExtra
 from app.schemas.menus import MenuCreate, MenuUpdate
 from app.core.utils import model_to_dict
@@ -40,7 +38,7 @@ async def build_menu_tree(menus: list[Menu], parent_id: int = 0, simple: bool = 
 
 
 @router.get("/menus", summary="查看用户菜单")
-async def _(
+async def get_menus(
         current: int = Query(1, description="页码"),
         size: int = Query(100, description="每页数量")
 ):
@@ -53,7 +51,7 @@ async def _(
 
 
 @router.get("/menus/tree/", summary="查看菜单树")
-async def _():
+async def get_menus_tree():
     menus = await Menu.filter(constant=False)
     # 递归生成菜单
     menu_tree = await build_menu_tree(menus, simple=True)
@@ -70,7 +68,7 @@ async def get_menu(menu_id: int):
 
 
 @router.post("/menus", summary="创建菜单")
-async def _(menu_in: MenuCreate):
+async def create_menus(menu_in: MenuCreate):
     # is_exist = await menu_controller.model.exists(route_path=menu_in.route_path)
     # if is_exist:
     #     raise HTTPException(
@@ -86,7 +84,7 @@ async def _(menu_in: MenuCreate):
 
 
 @router.patch("/menus/{menu_id}", summary="更新菜单")
-async def _(menu_id: int, menu_in: MenuUpdate):
+async def update_menus_by_id(menu_id: int, menu_in: MenuUpdate):
     menu_obj = await menu_controller.update(id=menu_id, obj_in=menu_in, exclude={"buttons"})
     if menu_obj and menu_in.buttons:
         await menu_controller.update_buttons_by_code(menu_obj, menu_in.buttons)
@@ -95,14 +93,14 @@ async def _(menu_id: int, menu_in: MenuUpdate):
 
 
 @router.delete("/menus/{menu_id}", summary="删除菜单")
-async def _(menu_id: int):
+async def delete_menus_by_id(menu_id: int):
     await menu_controller.remove(id=menu_id)
     await insert_log(log_type=LogType.AdminLog, log_detail_type=LogDetailType.MenuDeleteOne, by_user_id=0)
     return Success(msg="Deleted Successfully", data={"deleted_id": menu_id})
 
 
 @router.delete("/menus", summary="批量删除菜单")
-async def _(ids: str = Query(description="菜单ID列表, 用逗号隔开")):
+async def delete_menus(ids: str = Query(description="菜单ID列表, 用逗号隔开")):
     menu_ids = ids.split(",")
     for menu_id in menu_ids:
         menu_obj = await Menu.get(id=int(menu_id))
@@ -112,7 +110,7 @@ async def _(ids: str = Query(description="菜单ID列表, 用逗号隔开")):
 
 
 @router.get("/menus/pages/", summary="查看一级菜单")
-async def _():
+async def get_menus_pages():
     # user_id = CTX_USER_ID.get()
     # user_obj = await User.filter(id=user_id).first()
     # menus: list[Menu] = []
@@ -161,7 +159,7 @@ async def build_menu_button_tree(menus: list[Menu], parent_id: int = 0) -> list[
 
 
 @router.get("/menus/buttons/tree/", summary="查看菜单按钮树")
-async def _():
+async def get_menus_buttons_tree():
     menus_with_button = await Menu.filter(constant=False).annotate(button_count=Count('buttons')).filter(button_count__gt=0)
     menu_objs = menus_with_button.copy()
     while len(menus_with_button) > 0:

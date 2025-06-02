@@ -54,11 +54,7 @@ LOGGING_CONFIG: dict[str, Any] = {
 
 class Loggin:
     def __init__(self) -> None:
-        debug = APP_SETTINGS.DEBUG
-        if debug:
-            self.level = "DEBUG"
-        else:
-            self.level = "INFO"
+        self.level = "INFO"
 
     def setup_logger(self):
         loguru_logger.remove()

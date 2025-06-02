@@ -20,8 +20,10 @@ router = APIRouter()
 
 
 @router.post("/login", summary="登录")
-async def _(credentials: CredentialsSchema):
+async def login(credentials: CredentialsSchema):
     user_obj: User | None = await user_controller.authenticate(credentials)  # 账号验证, 失败则触发异常返回请求错误
+    if user_obj is None:
+        raise HTTPException(status_code=401, detail="用户名或密码错误")
     await user_controller.update_last_login(user_obj.id)
     payload = JWTPayload(
         data={"userId": user_obj.id, "userName": user_obj.user_name, "tokenType": "accessToken"},
@@ -105,7 +107,7 @@ async def auth_token(username: str = Form(...), password: str = Form(...)):
 
 
 @router.post("/refreshToken", summary="刷新认证")
-async def _(jwt_token: JWTOut):
+async def refresh_token(jwt_token: JWTOut):
     if not jwt_token.refresh_token:
         return Fail(code="4000", msg="The refreshToken is not valid.")
     status, code, data = check_token(jwt_token.refresh_token)
@@ -141,9 +143,11 @@ async def _(jwt_token: JWTOut):
 
 
 @router.get("/getUserInfo", summary="查看用户信息", dependencies=[DependAuth])
-async def _():
+async def get_user_info():
     user_id = CTX_USER_ID.get()
     user_obj: User = await user_controller.get(id=user_id)
+    if user_obj is None:
+        return Fail(code="4000", msg="用户不存在。")
     # data = await user_obj.to_dict(exclude_fields=["password"])
     data = await model_to_dict(user_obj,exclude_fields=["password"])
 
@@ -164,7 +168,7 @@ async def _():
 
 
 @router.get("/error", summary="自定义后端错误")  # todo 使用限流器, 每秒最多一次
-async def _(code: str, msg: str):
+async def check_error(code: str, msg: str):
     if code == "9999":
         return Success(code="4030", msg="accessToken已过期")
 

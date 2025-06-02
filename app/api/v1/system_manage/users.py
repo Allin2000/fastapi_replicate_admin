@@ -1,5 +1,3 @@
-import logging
-
 from fastapi import APIRouter, Query
 from tortoise.expressions import Q
 
@@ -10,13 +8,12 @@ from app.schemas.base import Success, SuccessExtra
 from app.schemas.users import UserCreate, UserUpdate
 from app.core.utils import model_to_dict
 
-logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
 
 @router.get("/users", summary="查看用户列表")
-async def _(
+async def get_users(
         current: int = Query(1, description="页码"),
         size: int = Query(10, description="每页数量"),
         userName: str = Query(None, description="用户名"),
@@ -63,7 +60,7 @@ async def get_user(user_id: int):
 
 
 @router.post("/users", summary="创建用户")
-async def _(user_in: UserCreate):
+async def create_users(user_in: UserCreate):
 
     new_user = await user_controller.create(obj_in=user_in)
     await user_controller.update_roles_by_code(new_user, user_in.roles)
@@ -72,7 +69,7 @@ async def _(user_in: UserCreate):
 
 
 @router.patch("/users/{user_id}", summary="更新用户")
-async def _(user_id: int, user_in: UserUpdate):
+async def update_users_by_id(user_id: int, user_in: UserUpdate):
     user = await user_controller.update(user_id=user_id, obj_in=user_in)
 
 
@@ -82,14 +79,14 @@ async def _(user_id: int, user_in: UserUpdate):
 
 
 @router.delete("/users/{user_id}", summary="删除用户")
-async def _(user_id: int):
+async def delete_users_by_id(user_id: int):
     await user_controller.remove(id=user_id)
     await insert_log(log_type=LogType.AdminLog, log_detail_type=LogDetailType.UserDeleteOne, by_user_id=0)
     return Success(msg="Deleted Successfully", data={"deleted_id": user_id})
 
 
 @router.delete("/users", summary="批量删除用户")
-async def _(ids: str = Query(..., description="用户ID列表, 用逗号隔开")):
+async def delete_users(ids: str = Query(..., description="用户ID列表, 用逗号隔开")):
     user_ids = ids.split(",")
     deleted_ids = []
     for user_id in user_ids:

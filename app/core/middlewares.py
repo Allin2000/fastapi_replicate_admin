@@ -6,12 +6,12 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.types import ASGIApp, Receive, Scope, Send
 
-from .bgtask import BgTasks
+from app.core.bgtask import BgTasks
 from app.sqlmodel.admin import User, Log, APILog
 from app.sqlmodel.base import LogType
 from app.settings.config import APP_SETTINGS
-from .ctx import CTX_USER_ID
-from .dependency import check_token
+from app.core.ctx import CTX_USER_ID
+from app.core.dependency import check_token
 
 
 class SimpleBaseMiddleware:
@@ -46,6 +46,7 @@ class BackGroundTaskMiddleware(SimpleBaseMiddleware):
     async def before_request(self, request: Request) -> ASGIApp | None:
         await BgTasks.init_bg_tasks_obj()
         # return self.app
+        return None
 
     async def after_request(self, request: Request, response: dict) -> None:
         await BgTasks.execute_tasks()

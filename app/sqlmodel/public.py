@@ -1,12 +1,11 @@
-from tortoise import models, fields
-
-from tortoise.fields import DatetimeField
-
+from typing import Any
 from datetime import datetime
+
+from tortoise import models, fields
 from tortoise.fields import Field
 from tortoise.models import Model
 from tortoise.exceptions import ConfigurationError
-from typing import Any
+from dateutil.parser import parse
 
 class NaiveDatetimeField(Field[datetime], datetime):
     """
@@ -28,8 +27,7 @@ class NaiveDatetimeField(Field[datetime], datetime):
             return None
         if isinstance(value, datetime):
             return value.replace(tzinfo=None)
-        from tortoise.utils import parse_datetime
-        return parse_datetime(value).replace(tzinfo=None)
+        return parse(value).replace(tzinfo=None)
 
     def to_db_value(self, value: datetime | None, instance: type[Model] | Model) -> datetime | None:
         if hasattr(instance, "_saved_in_db") and (

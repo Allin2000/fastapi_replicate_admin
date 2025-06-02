@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from fastapi import APIRouter, Depends, Query
 from tortoise.expressions import Q
 
@@ -14,7 +15,7 @@ router = APIRouter()
 
 
 @router.get("/articles", summary="查看文章列表")
-async def _(query: ArticleSearch = Depends()):
+async def get_articles(query: ArticleSearch = Depends()):
     q = Q()
 
     if query.title:
@@ -64,7 +65,7 @@ async def _(query: ArticleSearch = Depends()):
 
 
 @router.get("/articles/{article_id}", summary="查看文章详情")
-async def _(article_id: int):
+async def get_article_by_id(article_id: int):
     article = await article_controller.get(id=article_id)
     data = await model_to_dict(article, exclude_fields=["author_id"])
     author = await article.author  # type: ignore
@@ -73,19 +74,19 @@ async def _(article_id: int):
 
 
 @router.patch("/articles/{article_id}", summary="更新文章")
-async def _(article_id: int, article_in: ArticleUpdate):
+async def update_article_by_id(article_id: int, article_in: ArticleUpdate):
     await article_controller.update(id=article_id, obj_in=article_in)
     return Success(msg="Update Successfully")
 
 
 @router.delete("/articles/{article_id}", summary="删除文章")
-async def _(article_id: int):
+async def delete_article_by_id(article_id: int):
     await article_controller.remove(id=article_id)
     return Success(msg="Deleted Successfully", data={"deleted_id": article_id})
 
 
 @router.delete("/articles", summary="批量删除文章")
-async def _(ids: str = Query(..., description="文章ID列表, 用逗号隔开")):
+async def delete_articles(ids: str = Query(..., description="文章ID列表, 用逗号隔开")):
     article_ids = ids.split(",")
     deleted_ids = []
     for article_id in article_ids:

@@ -1,3 +1,4 @@
+from typing import Any,List,Dict
 from fastapi import APIRouter
 
 from app.services.menu import menu_controller
@@ -18,7 +19,7 @@ async def build_route_tree(menus: list[Menu], parent_id: int = 0, simple: bool =
     :param simple: 是否简化返回数据
     :return:
     """
-    tree = []
+    tree :List[Dict[str, Any]]= []
     for menu in menus:
         # 预加载关联的Role对象
         # await menu.fetch_related('role_menus')
@@ -62,12 +63,12 @@ async def build_route_tree(menus: list[Menu], parent_id: int = 0, simple: bool =
 
 
 @router.get("/constant-routes", summary="查看常量路由(公共路由)")
-async def _():
+async def check_constant_routes():
     """
     查看常量路由
     :return:
     """
-    data = []
+    data :List[Dict[str, Any]]= []
     menu_objs = await Menu.filter(constant=True, hide_in_menu=True)
     for menu_obj in menu_objs:
         route_data = {
@@ -91,7 +92,7 @@ async def _():
 
 
 @router.get("/user-routes", summary="查看用户路由菜单", dependencies=[DependAuth])
-async def _():
+async def check_user_routes():
     """
     查看用户路由菜单, 超级管理员返回所有菜单
     :return:
@@ -135,6 +136,6 @@ async def _():
 
 
 @router.get("/{route_name}/exists", summary="路由是否存在", dependencies=[DependAuth])
-async def _(route_name: str):
+async def check_route_exists(route_name: str):
     is_exists = await menu_controller.model.exists(route_name=route_name)
     return Success(data=is_exists)

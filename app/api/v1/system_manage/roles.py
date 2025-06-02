@@ -15,7 +15,7 @@ router = APIRouter()
 
 
 @router.get("/roles", summary="查看角色列表")
-async def _(
+async def get_roles(
         current: int = Query(1, description="页码"),
         size: int = Query(10, description="每页数量"),
         roleName: str = Query(None, description="角色名称"),
@@ -48,7 +48,7 @@ async def get_role(role_id: int):
 
 
 @router.post("/roles", summary="创建角色")
-async def _(role_in: RoleCreate):
+async def create_roles(role_in: RoleCreate):
     role = await role_controller.model.exists(role_code=role_in.role_code)
     if role:
         raise HTTPException(
@@ -62,21 +62,21 @@ async def _(role_in: RoleCreate):
 
 
 @router.patch("/roles/{role_id}", summary="更新角色")
-async def _(role_id: int, role_in: RoleUpdate):
+async def update_roles_by_id(role_id: int, role_in: RoleUpdate):
     await role_controller.update(id=role_id, obj_in=role_in)
     await insert_log(log_type=LogType.AdminLog, log_detail_type=LogDetailType.RoleUpdateOne, by_user_id=0)
     return Success(msg="Updated Successfully", data={"updated_id": role_id})
 
 
 @router.delete("/roles/{role_id}", summary="删除角色")
-async def _(role_id: int):
+async def delete_roles_by_id(role_id: int):
     await role_controller.remove(id=role_id)
     await insert_log(log_type=LogType.AdminLog, log_detail_type=LogDetailType.RoleDeleteOne, by_user_id=0)
     return Success(msg="Deleted Successfully", data={"deleted_id": role_id})
 
 
 @router.delete("/roles", summary="批量删除角色")
-async def _(ids: str = Query(..., description="角色ID列表, 用逗号隔开")):
+async def delete_roles(ids: str = Query(..., description="角色ID列表, 用逗号隔开")):
     role_ids = ids.split(",")
     deleted_ids = []
     for role_id in role_ids:
@@ -88,7 +88,7 @@ async def _(ids: str = Query(..., description="角色ID列表, 用逗号隔开")
 
 
 @router.get("/roles/{role_id}/menus", summary="查看角色菜单")
-async def _(role_id: int):
+async def get_roles_by_id_menus(role_id: int):
     role_obj = await role_controller.get(id=role_id)
     if role_obj.role_code == "R_SUPER":
         menu_objs = await menu_controller.model.filter(constant=False)
@@ -100,7 +100,7 @@ async def _(role_id: int):
 
 
 @router.patch("/roles/{role_id}/menus", summary="更新角色菜单")
-async def _(role_id: int, role_in: RoleUpdateAuthrization):
+async def update_roles_by_id_menus(role_id: int, role_in: RoleUpdateAuthrization):
     if role_in.role_home is not None:
         role_obj = await role_controller.update(id=role_id, obj_in=dict(role_home=role_in.role_home))
         if role_in.menu_ids:
@@ -118,7 +118,7 @@ async def _(role_id: int, role_in: RoleUpdateAuthrization):
 
 
 @router.get("/roles/{role_id}/buttons", summary="查看角色按钮")
-async def _(role_id: int):
+async def get_roles_by_id_buttons(role_id: int):
     role_obj = await role_controller.get(id=role_id)
     if role_obj.role_code == "R_SUPER":
         button_objs = await Button.all()
@@ -131,7 +131,7 @@ async def _(role_id: int):
 
 
 @router.patch("/roles/{role_id}/buttons", summary="更新角色按钮")
-async def _(role_id: int, role_in: RoleUpdateAuthrization):
+async def update_roles_by_id_buttons(role_id: int, role_in: RoleUpdateAuthrization):
     role_obj = await role_controller.get(id=role_id)
     if role_in.button_ids is not None:
         await role_obj.buttons.clear()

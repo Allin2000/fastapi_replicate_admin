@@ -16,7 +16,7 @@ router = APIRouter()
 
 
 @router.get("/logs", summary="查看日志列表")
-async def _(log_in: LogSearch = Depends()):
+async def get_logs(log_in: LogSearch = Depends()):
     q = Q()
     if log_in.log_type:
         q &= Q(log_type=log_in.log_type)
@@ -78,7 +78,7 @@ async def _(log_in: LogSearch = Depends()):
 
 
 @router.get("/logs/{log_id}", summary="查看日志")
-async def _(log_id: int):
+async def get_logs_by_id(log_id: int):
     log_obj = await log_controller.get(id=log_id)
     # data = await log_obj.to_dict(exclude_fields=["id", "create_time", "update_time"])
     data = await model_to_dict(log_obj,exclude_fields=["id", "create_time", "update_time"])
@@ -86,7 +86,7 @@ async def _(log_id: int):
 
 
 @router.patch("/logs/{log_id}", summary="更新日志")
-async def _(
+async def update_logs_by_id(
         log_id: int,
         log_in: LogUpdate,
 ):
@@ -95,7 +95,7 @@ async def _(
 
 
 @router.delete("/logs/{log_id}", summary="删除日志")
-async def _(
+async def delete_logs_by_id(
         log_id: int,
 ):
     await log_controller.remove(id=log_id)
@@ -103,7 +103,7 @@ async def _(
 
 
 @router.delete("/logs", summary="批量删除日志")
-async def _(ids: str = Query(..., description="日志ID列表, 用逗号隔开")):
+async def delete_logs(ids: str = Query(..., description="日志ID列表, 用逗号隔开")):
     log_ids = ids.split(",")
     deleted_ids = []
     for log_id in log_ids:

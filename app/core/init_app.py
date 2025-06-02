@@ -1,14 +1,15 @@
 
+from pathlib import Path
+
 from fastapi import FastAPI
 from aerich import Command
 from tortoise.contrib.fastapi import register_tortoise
 from loguru import logger
-
-from app.settings.config import APP_SETTINGS
-
 from fastapi.middleware import Middleware
 from fastapi.middleware.cors import CORSMiddleware
+from aerich.migrate import Migrate
 
+from app.settings.config import APP_SETTINGS
 from app.services.role import role_controller
 from app.services.user import UserCreate, user_controller
 from app.core.exceptions import (
@@ -26,8 +27,7 @@ from app.core.exceptions import (
 from app.core.middlewares import BackGroundTaskMiddleware, APILoggerMiddleware, APILoggerAddResponseMiddleware
 from app.sqlmodel.admin import Menu, Role, User, Button
 from app.sqlmodel.base import StatusType, IconType, MenuType
-from pathlib import Path
-from aerich.migrate import Migrate
+
 
 
 
