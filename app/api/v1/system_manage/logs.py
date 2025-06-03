@@ -37,6 +37,7 @@ async def get_logs(log_in: LogSearch = Depends()):
         q &= Q(create_time__gt=datetime.fromtimestamp(int(_timeRange[0]) / 1000), create_time__lt=datetime.fromtimestamp(int(_timeRange[1]) / 1000))
 
     user_id = CTX_USER_ID.get()
+    
     user_obj = await user_controller.get(id=user_id)
     user_role_objs: list[Role] = await user_obj.roles
     user_role_codes = [role_obj.role_code for role_obj in user_role_objs]

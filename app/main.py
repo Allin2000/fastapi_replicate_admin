@@ -20,17 +20,18 @@ from app.core.init_app import (
 from app.sqlmodel.admin import Log
 from app.sqlmodel.base import LogType, LogDetailType
 # from app.core.dependency import DependPermission
+from app.core.dependency import DependAuth
 
 router = APIRouter()
 
 router.include_router(router=health_check.router, tags=["Healthy Check"], prefix="/health-check")
 router.include_router(router=route.router, tags=["route"], prefix="/route")
 router.include_router(router=auth.router, tags=["auth"], prefix="/auth")
-router.include_router(router=logs.router, tags=["日志管理"], prefix="/system-manage")
-router.include_router(router=users.router, tags=["用户管理"], prefix="/system-manage")
-router.include_router(router=menus.router, tags=["菜单管理"], prefix="/system-manage")
-router.include_router(router=roles.router, tags=["角色管理"], prefix="/system-manage")
-router.include_router(router=article.router, tags=["文章管理"], prefix="/system-manage")
+router.include_router(router=logs.router, tags=["日志管理"], prefix="/system-manage", dependencies=[DependAuth])
+router.include_router(router=users.router, tags=["用户管理"], prefix="/system-manage", dependencies=[DependAuth])
+router.include_router(router=menus.router, tags=["菜单管理"], prefix="/system-manage", dependencies=[DependAuth])
+router.include_router(router=roles.router, tags=["角色管理"], prefix="/system-manage", dependencies=[DependAuth])
+router.include_router(router=article.router, tags=["文章管理"], prefix="/system-manage", dependencies=[DependAuth])
 
 
 def create_app() -> FastAPI:
