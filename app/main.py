@@ -4,8 +4,8 @@ from contextlib import asynccontextmanager
 from loguru import logger
 from fastapi import FastAPI,APIRouter
 
-from app.api.v1 import health_check,route,auth
-from app.api.v1.system_manage import logs,menus,roles,users,article
+from app.api.v1 import health_check,route,article,auth
+from app.api.v1.system_manage import logs,menus,roles,users
 from app.settings.config import APP_SETTINGS
 
 from app.core.init_app import (
@@ -31,7 +31,7 @@ router.include_router(router=logs.router, tags=["日志管理"], prefix="/system
 router.include_router(router=users.router, tags=["用户管理"], prefix="/system-manage", dependencies=[DependAuth])
 router.include_router(router=menus.router, tags=["菜单管理"], prefix="/system-manage", dependencies=[DependAuth])
 router.include_router(router=roles.router, tags=["角色管理"], prefix="/system-manage", dependencies=[DependAuth])
-router.include_router(router=article.router, tags=["文章管理"], prefix="/system-manage", dependencies=[DependAuth])
+router.include_router(router=article.router, tags=["文章管理"], dependencies=[DependAuth])
 
 
 def create_app() -> FastAPI:
